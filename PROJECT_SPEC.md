@@ -50,28 +50,38 @@ User
 → strategic insights are generated
 → user views insights or asks questions
 
-## Primary MVP
+## Current MVP
 
-The MVP must support:
+The MVP currently focuses on this end-to-end workflow:
 
-- Adding competitors
-- Monitoring at least one public competitor source
-- Custom Bright Data Scraper Studio collector
-- Structured output
-- Snapshot storage
-- Change detection
-- AI-powered change analysis
-- Dashboard showing competitor activity
-- Evidence behind insights
-- Scraper health detection
-- Bright Data self-healing demonstration
+User
+→ Competitor
+→ Public Source
+→ Dynamic Bright Data Scraper Studio collector
+→ Structured collection
+→ Snapshot
+→ Deterministic change detection
+→ Gemini analysis
+→ Evidence-backed insight
+→ Dashboard
 
-## Secondary features
+The initial MVP does NOT require:
 
-If time permits:
+- RAG
+- conversational interface
+- AI/model visibility signals
+- notifications
+- complex scheduling
+- queues
+- vector databases
 
-- Multiple competitor sources
-- LLMWatch
+## Future Features
+
+After the core workflow is reliable, consider:
+
+- Scraper self-healing
+- Multiple source types
+- AI/model visibility signals
 - Conversational interface
 - Historical retrieval/RAG
 - Notifications
