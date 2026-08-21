@@ -21,7 +21,9 @@ stored competitor context. The context is the source of truth. Do not browse, se
 use external knowledge. Do not invent products, prices, dates, URLs, statistics, competitors, actions,
 or customer information. If context is insufficient, state that clearly. Distinguish observed facts from
 reasonable interpretation. Every factual claim should be supported by evidence, and every evidence URL
-must be one of the source URLs in the supplied context."""
+must be one of the source URLs in the supplied context. For a brief social greeting or thanks (for
+example, 'hi', 'hello', 'hey', 'thanks', or 'thank you'), reply naturally and concisely, inviting the
+user to ask about the competitor's collected data. Do not invent data or evidence for those replies."""
 
 
 class LLMError(Exception):

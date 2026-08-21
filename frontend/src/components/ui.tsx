@@ -22,8 +22,7 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
 export function Shell({ children }: PropsWithChildren) {
   return <div className="app-shell">
     <aside className="sidebar">
-      <Link className="brand" to="/"><span className="brand-mark">◉</span><span>Competitive<br /><strong>AI Radar</strong></span></Link>
-      <nav><Link to="/" className="nav-link">Overview</Link><Link to="/" className="nav-link">Competitors</Link></nav>
+      <Link className="brand" to="/"><span className="brand-mark">◉</span><strong>RivalSignal</strong></Link>
       <p className="sidebar-note">Evidence-backed intelligence from your collected data.</p>
     </aside>
     <main className="main-content">{children}</main>
