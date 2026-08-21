@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
 if TYPE_CHECKING:
+    from app.models.insight import Insight
     from app.models.source import Source
 
 
@@ -21,3 +22,4 @@ class Competitor(Base):
     sources: Mapped[list["Source"]] = relationship(
         back_populates="competitor", cascade="all, delete-orphan"
     )
+    insights: Mapped[list["Insight"]] = relationship(back_populates="competitor")

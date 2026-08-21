@@ -44,6 +44,17 @@ def create_source(
     return source
 
 
+@router.get("/competitors/{competitor_id}/sources", response_model=list[SourceRead])
+def list_competitor_sources(competitor_id: int, db: Session = Depends(get_db)) -> list[Source]:
+    if db.get(Competitor, competitor_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Competitor not found")
+    return list(
+        db.scalars(
+            select(Source).where(Source.competitor_id == competitor_id).order_by(Source.id)
+        )
+    )
+
+
 @router.get("/sources/{source_id}", response_model=SourceRead)
 def get_source(source_id: int, db: Session = Depends(get_db)) -> Source:
     source = db.get(Source, source_id)

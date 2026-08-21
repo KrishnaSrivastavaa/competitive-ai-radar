@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
 if TYPE_CHECKING:
+    from app.models.insight import Insight
     from app.models.source import Source
 
 
@@ -22,3 +23,4 @@ class Change(Base):
     significance: Mapped[str] = mapped_column(String(50), nullable=False)
 
     source: Mapped["Source"] = relationship(back_populates="changes")
+    insights: Mapped[list["Insight"]] = relationship(back_populates="change")

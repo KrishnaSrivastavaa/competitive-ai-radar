@@ -44,6 +44,7 @@ def test_create_and_get_source(client: TestClient) -> None:
     source = response.json()
     assert source["competitor_id"] == competitor["id"]
     assert client.get(f"/sources/{source['id']}").json() == source
+    assert client.get(f"/competitors/{competitor['id']}/sources").json() == [source]
 
 
 def test_source_requires_existing_competitor(client: TestClient) -> None:
