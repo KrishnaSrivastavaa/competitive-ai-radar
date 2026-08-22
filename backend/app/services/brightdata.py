@@ -113,6 +113,20 @@ class BrightDataClient:
             raise BrightDataError(f"Bright Data CLI scraper creation failed: {detail}")
         return collector_id
 
+    def delete_scraper(self, scraper_id: str) -> None:
+        """Permanently delete a Scraper Studio scraper from Bright Data."""
+        response = self._request(
+            "DELETE",
+            f"/dca/collector/{scraper_id}",
+            params={"reason": "no_longer_needed"},
+        )
+
+        if response.text.strip() != "OK":
+            raise BrightDataError(
+                f"Bright Data returned an unexpected scraper deletion response: "
+                f"{response.text[:500]}"
+            )
+
     def collect(self, collector_id: str, source_url: str) -> tuple[str, Any]:
         """Trigger a collector with its default url input, then retrieve its dataset."""
         trigger = self._json(

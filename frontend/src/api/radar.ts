@@ -4,6 +4,7 @@ import type { AgentAnswer, Change, CollectionRun, Competitor, Insight, Snapshot,
 export const radarApi = {
   listCompetitors: () => request<Competitor[]>("/competitors"),
   getCompetitor: (id: number) => request<Competitor>(`/competitors/${id}`),
+  deleteCompetitor: (id: number) => request<void>(`/competitors/${id}`, { method: "DELETE" }),
   createCompetitor: (payload: Pick<Competitor, "name" | "website_url"> & Partial<Pick<Competitor, "description" | "active">>) =>
     request<Competitor>("/competitors", { method: "POST", body: JSON.stringify(payload) }),
   listSources: (competitorId: number) => request<Source[]>(`/competitors/${competitorId}/sources`),

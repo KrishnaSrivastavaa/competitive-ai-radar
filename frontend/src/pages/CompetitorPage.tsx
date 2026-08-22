@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { radarApi } from "../api/radar";
 import { ChangeCard, EmptyState, ErrorState, EvidenceList, JsonData, LoadingState, StatusBadge } from "../components/ui";
 import type { AgentAnswer, Change, CompetitorWorkspaceData, Insight, Snapshot } from "../types";
@@ -8,18 +8,71 @@ type Tab = "overview" | "data" | "changes" | "analyst";
 
 export function CompetitorPage() {
   const rawId = useParams().id; const competitorId = Number(rawId);
+  const navigate = useNavigate();
   const [data, setData] = useState<CompetitorWorkspaceData>(); const [error, setError] = useState<string>(); const [tab, setTab] = useState<Tab>("overview"); const [collecting, setCollecting] = useState(false); const [collectError, setCollectError] = useState<string>();
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string>();
   const load = async () => { setError(undefined); try { const competitor = await radarApi.getCompetitor(competitorId); const sources = await radarApi.listSources(competitorId); const [runs, snapshots, changes, insights] = await Promise.all([Promise.all(sources.map((source) => radarApi.listRuns(source.id))), Promise.all(sources.map((source) => radarApi.listSnapshots(source.id))), Promise.all(sources.map((source) => radarApi.listChanges(source.id))), radarApi.listInsights(competitorId)]); setData({ competitor, sources, runsBySource: Object.fromEntries(sources.map((source, i) => [source.id, runs[i]])), snapshotsBySource: Object.fromEntries(sources.map((source, i) => [source.id, snapshots[i]])), changesBySource: Object.fromEntries(sources.map((source, i) => [source.id, changes[i]])), insights }); } catch (caught) { setError(caught instanceof Error ? caught.message : "Unable to load this competitor."); } };
   useEffect(() => { if (Number.isInteger(competitorId) && competitorId > 0) void load(); }, [competitorId]);
   const collect = async () => { if (!data) return; setCollecting(true); setCollectError(undefined); try { await Promise.all(data.sources.filter((source) => source.active && source.collector_id).map((source) => radarApi.collectSource(source.id))); await load(); } catch (caught) { setCollectError(caught instanceof Error ? caught.message : "Collection failed."); } finally { setCollecting(false); } };
+  const removeCompetitor = async () => {
+    if (!data || deleting) return;
+
+    const confirmed = window.confirm(
+      `Delete ${data.competitor.name}? This will permanently remove the competitor and all of its collected data.`
+    );
+
+    if (!confirmed) return;
+
+    setDeleting(true);
+    setDeleteError(undefined);
+
+    try {
+      await radarApi.deleteCompetitor(competitorId);
+      navigate("/");
+    } catch (caught) {
+      setDeleteError(
+        caught instanceof Error
+          ? caught.message
+          : "Unable to delete this competitor."
+      );
+    } finally {
+      setDeleting(false);
+    }
+  };
   if (!Number.isInteger(competitorId) || competitorId < 1) return <ErrorState message="This competitor address is invalid." />;
   if (error) return <ErrorState message={error} onRetry={() => void load()} />;
   if (!data) return <LoadingState label="Loading competitor workspace…" />;
   const latestRuns = Object.values(data.runsBySource).flat().sort((a, b) => new Date(b.finished_at ?? b.started_at).getTime() - new Date(a.finished_at ?? a.started_at).getTime()); const latestRun = latestRuns[0];
   return <>
     <Link className="back-link" to="/">← All competitors</Link>
-    <header className="workspace-header"><div><div className="workspace-title"><span className="avatar large">{data.competitor.name.slice(0, 1).toUpperCase()}</span><div><p className="eyebrow">COMPETITOR WORKSPACE</p><h1>{data.competitor.name}</h1><a className="url" href={data.competitor.website_url} target="_blank" rel="noreferrer">{data.competitor.website_url.replace(/^https?:\/\//, "")} ↗</a></div></div></div><div className="workspace-actions">{latestRun && <StatusBadge value={latestRun.health_status} />}<button className="button primary" onClick={() => void collect()} disabled={collecting || !data.sources.some((source) => source.collector_id)}>{collecting ? "Collecting…" : "Collect latest data"}</button></div></header>
+    <header className="workspace-header"><div><div className="workspace-title"><span className="avatar large">{data.competitor.name.slice(0, 1).toUpperCase()}</span><div><p className="eyebrow">COMPETITOR WORKSPACE</p><h1>{data.competitor.name}</h1><a className="url" href={data.competitor.website_url} target="_blank" rel="noreferrer">{data.competitor.website_url.replace(/^https?:\/\//, "")} ↗</a></div></div></div>
+    <div className="workspace-actions">
+      {latestRun && <StatusBadge value={latestRun.health_status} />}
+
+      <button
+        className="button primary"
+        onClick={() => void collect()}
+        disabled={
+          collecting ||
+          deleting ||
+          !data.sources.some((source) => source.collector_id)
+        }
+      >
+        {collecting ? "Collecting…" : "Collect latest data"}
+      </button>
+
+      <button
+        className="button danger"
+        onClick={() => void removeCompetitor()}
+        disabled={collecting || deleting}
+      >
+        {deleting ? "Deleting…" : "Delete"}
+      </button>
+    </div>
+    </header>
     {collectError && <p className="inline-error">{collectError}</p>}
+    {deleteError && <p className="inline-error">{deleteError}</p>}
     <nav className="tabs">{(["overview", "data", "changes", "analyst"] as Tab[]).map((item) => <button key={item} className={tab === item ? "active" : ""} onClick={() => setTab(item)}>{item === "analyst" ? "AI Analyst" : item}</button>)}</nav>
     {tab === "overview" && <Overview data={data} latestRun={latestRun} onSelectTab={setTab} />}
     {tab === "data" && <DataTab data={data} />}
